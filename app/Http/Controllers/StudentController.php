@@ -51,16 +51,21 @@ class StudentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'student_code' => 'required|string|max:50|unique:students,student_code',
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:students,email',
             'phone' => 'nullable|string|max:30',
-            'course' => 'nullable|string|max:255',
+            'course' => 'required|string|max:255',
         ]);
 
         $validated['status'] = 'active';
 
-        Student::create($validated);
+        $validated['student_code'] = 'TEMP-' . uniqid();
+
+        $student = Student::create($validated);
+
+        $student->update([
+            'student_code' => 'STU-' . str_pad($student->id, 7, '0', STR_PAD_LEFT),
+        ]);
 
         return redirect()
             ->route('students.index')
